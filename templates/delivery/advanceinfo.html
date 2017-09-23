@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<h1>advance info page</h1>
+
+<br><br>
+<div>
+    <form method="post" onsubmit="return confirm('Do you really want to submit the form?');">
+        {% csrf_token %}
+
+        <label for='restaurant_name'>Restaurant Name </label>
+        <input id='restaurant_name' type="text" name='restaurant_name' value="{{ rest.restaurant_name }}" required/><br>
+
+        <label for="restaurant_open_hour">Restaurant Open Hour</label>
+        <input id="restaurant_name" type="text" name="restaurant_open_hour"
+{#               Use the filter to render '' instead of 'None' when rendering #}
+               value="{{ rest.restaurant_open_hour | default_if_none:'' }}"/><br>
+
+        <label for="restaurant_close_hour">Restaurant Close Hour </label>
+        <input id="restaurant_close_hour" type="text" name="restaurant_close_hour"
+               value="{{ rest.restaurant_close_hour | default_if_none:'' }}"/><br>
+
+        <label for="restaurant_address">Restaurant Address</label>
+        <input id="restaurant_address" type="text" name="restaurant_address" value="{{ rest.restaurant_address }}"
+               required/><br>
+
+        <label for="restaurant_phone">Restaurant Phone</label>
+        <input id="restaurant_phone" type="tel" name="restaurant_phone" value="{{ rest.restaurant_phone }}"
+               required/><br>
+
+        <label for="restaurant_email">Restaurant Email</label>
+        <input id="restaurant_email" type="email" name="restaurant_email" value="{{ rest.restaurant_email }}"/><br>
+
+        <label for="restaurant_category">Restaurant Category</label>
+        <input id="restaurant_category" type="text" name="restaurant_category"
+               value="{{ rest.restaurant_category }}"/><br>
+
+        <label for="restaurant_description">Restaurant Description</label>
+        <input id="restaurant_description" type="text" name="restaurant_description"
+               value="{{ rest.restaurant_description }}"/><br>
+
+
+        <label for="restaurant_score">Restaurant Score</label>
+        <input id="restaurant_score" type="text" name="restaurant_score"
+               value="{{ rest.restaurant_score | default_if_none:'' }}"/><br>
+
+        <label for="restaurant_area">Restaurant Area</label>
+        <input id="restaurant_area" type="text" name="restaurant_area"
+               value="{{ rest.restaurant_area }}"/><br>
+
+        <label for="restaurant_revenue">Restaurant Revenue</label>
+        <input id="restaurant_revenue" type="text" name="restaurant_revenue"
+               value="{{ rest.restaurant_revenue | default_if_none:'' }}"/><br>
+
+        <label for="restaurant_numofrecommendation">Restaurant NumOfRecommendation</label>
+        <input id="restaurant_numofrecommendation" type="text" name="restaurant_numofrecommendation"
+               value="{{ rest.restaurant_numofrecommendation | default_if_none:'' }}"/><br>
+
+        <label for="restaurant_picture">Restaurant Picture</label>
+        <input id="restaurant_picture" type="text" name="restaurant_picture"
+               value="{{ rest.restaurant_picture }}"/><br>
+
+        <br><br>
+
+{#        <input type="submit" value="Apply" onclick="">#}
+        <input type="submit" value="Save and Exit" onclick="">
+    </form>
+{#    <script>#}
+{#        function editRestaurant(){#}
+{#            var xhr = new XMLHttpRequest();#}
+{#            xhr.onreadystatechange = function(){#}
+{#                if (this.readyState == 4 && this.status == 200){#}
+{#                          document.getElementById("test").innerHTML = this.responseText;#}
+{#                }#}
+{#            };#}
+{#            xhr.send();#}
+{#        }#}
+{#  </script>#}
+</div>
+<div id = "test">
+
+</div>
+</body>
+</html>

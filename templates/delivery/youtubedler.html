@@ -1,0 +1,112 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="{% static '/js/jquery-3.2.1.min.js' %}"></script>
+    <link rel="stylesheet" type="text/css" href="{% static '/css/custom.css' %}">
+</head>
+<body>
+<script>
+    {#    get CSRF TOKEN#}
+    function getCookie(name) {
+        var cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = jQuery.trim(cookies[i]);
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    var csrftoken = getCookie('csrftoken');
+
+    function prepare_download() {
+
+        // First show the loader with the loader message
+        show_loader_and_message_disable_submit();
+
+        function csrfSafeMethod(method) {
+            // these HTTP methods do not require CSRF protection
+            return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+        }
+
+        $.ajaxSetup({
+            beforeSend: function (xhr, settings) {
+                if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                    xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                }
+            }
+        });
+        var url = document.getElementById('url').value;
+        $.ajax({
+            url: '/preparedownload/',
+            data: {
+                'url': url,
+            },
+            dataType: 'json',
+            success: function (response) {
+                if (response['success']=='true')
+                {
+                    var btn = document.getElementById('download-button');
+                    btn.setAttribute("href", "{% static '/media/' %}" + response['str_timestamp'] + "/" + response['file_name']);
+                    btn.setAttribute('download', response['file_name']);
+                    {#                    btn.setAttribute('onclick', "'delete_files_in_background()'")#}
+                    hide_loader_and_message_enable_submit();
+
+                }
+                else
+                {
+                    var url_field = document.getElementById('url');
+                    url_field.value = "";
+                    url_field.focus();
+                    hide_loader_and_message_enable_submit();
+                    document.getElementById("download-button").style.visibility = 'hidden';
+
+                    alert("URL is not correct, please paste in a correct one");
+                }
+
+            }
+        });
+
+    }
+
+    function show_loader_and_message_disable_submit() {
+        document.getElementById("loader").style.visibility = 'visible';
+        document.getElementById("loader_message").style.visibility = 'visible';
+        document.getElementById("submit_button").setAttribute("disabled", "true");
+        document.getElementById("download-button").style.visibility = 'hidden';
+    }
+
+    function hide_loader_and_message_enable_submit() {
+        document.getElementById("loader").style.visibility = 'hidden';
+        document.getElementById("loader_message").style.visibility = 'hidden';
+        document.getElementById("submit_button").removeAttribute("disabled");
+        document.getElementById("download-button").style.visibility = 'visible';
+    }
+
+    function delete_files_in_background() {
+
+    }
+
+
+</script>
+
+<h1>this is youtube downlownding page!</h1>
+Paste your link here:
+<input type="text" name="url" id="url" alt="Paste your link here" required/>
+<button id="submit_button" onclick="prepare_download()">submit</button>
+<br><br>
+<row>
+    <a id="download-button" style="visibility: hidden">download</a>
+</row>
+<div id="loader" class="loader" style="visibility: hidden"></div>
+<div id="loader_message" style="visibility: hidden">I am preparing your request, gimme a sec.</div>
+</body>
+</html>

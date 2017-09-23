@@ -1,0 +1,237 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<script type="text/javascript" src="{% static '/js/jquery-3.2.1.min.js' %} "></script>
+
+<script>
+
+    {#    get CSRF TOKEN#}
+    function getCookie(name) {
+        var cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = jQuery.trim(cookies[i]);
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    var csrftoken = getCookie('csrftoken');
+
+
+    function showRestaurants() {
+        var data = document.getElementById("data").value;
+        var obj = JSON.parse(data);
+
+
+        var table = "<table id='rest_table'>";
+        for (rest in obj) {
+
+            table += "<tr id='rest_row_" + obj[rest] + "'><td><a href=" + '/deliveryadmin/restaurantadvanceinfo?id=' + parseInt(obj[rest]) + ">";
+            table += rest;
+            table += "</a></td>" +
+                "<td><button value=" + parseInt(obj[rest]) + " onclick='deleteSelectedRestaurant(" + parseInt(obj[rest]) + ")'>Delete</button></td>" +
+                {#                    "<td><button id="+ 'delete'+ parseInt(obj[rest])  + ">Delete</button></td>" +#}
+                "</tr>";
+        }
+
+        table += "</table>"
+        document.getElementById("existing_restaurants").innerHTML = table;
+    }
+
+    function deleteSelectedRestaurant(restID) {
+
+        var answer = confirm("delete the selected restaurant?")
+        if (answer) {
+
+
+               function csrfSafeMethod(method) {
+                    // these HTTP methods do not require CSRF protection
+                    return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+                }
+
+                $.ajaxSetup({
+                    beforeSend: function (xhr, settings) {
+                        if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                            xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                        }
+                    }
+                });
+
+                $.ajax({
+                    url: '/deleteRestaurant/',
+                    data: {
+                        'restID': restID,
+                    },
+                    dataType: 'json',
+                    success: function (response) {
+                        if (response) {
+                            document.getElementById('rest_row_' + restID).remove();
+                        }
+                    }
+                });
+            }
+
+    }
+
+    function validate(){
+        var result = false;
+        if (document.getElementById('restaurant_name').value!="" && document.getElementById('restaurant_address').value!="" && document.getElementById('restaurant_phone').value!="" )
+        {
+            result = true;
+        }
+        return result;
+    }
+
+    function addRestaurantRecord() {
+        if (validate()) {
+        var answer = confirm('Are you sure?');
+
+        if (answer) {
+
+
+
+                function csrfSafeMethod(method) {
+                    // these HTTP methods do not require CSRF protection
+                    return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+                }
+
+                $.ajaxSetup({
+                    beforeSend: function (xhr, settings) {
+                        if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                            xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                        }
+                    }
+                });
+
+                $.ajax({
+                    url: '/addRestaurant/',
+                    dataType: 'json',
+
+                    success: function (response) {
+                        if (response) {
+                            alert("DFDF");
+                        }
+                    }
+                });
+            }
+        }
+    }
+
+    {#    check if the name is available, if not, alert the user#}
+    function checkAvailability(str) {
+        if (str!="") {
+            function csrfSafeMethod(method) {
+                // these HTTP methods do not require CSRF protection
+                return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+            }
+
+            $.ajaxSetup({
+                beforeSend: function (xhr, settings) {
+                    if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                        xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                    }
+                }
+            });
+
+            $.ajax({
+                url: '/getAvailability/',
+                data: {
+                    'restName': str,
+                },
+                dataType: 'json',
+                success: function (response) {
+                    if (response['message'] == 'exist') {
+                        alert("Name exists, change another");
+                        document.getElementById("restaurant_name").value = "";
+                    }
+                }
+            });
+        }
+    }
+
+</script>
+
+
+<body onload="showRestaurants()">
+<input type="hidden" id="data" name="variable" value="{{ data }}">
+<h1>
+    This is Delivery Admin Page!!!
+</h1>
+
+<div>
+    <form action="/addRestaurant/" method="post">
+        {% csrf_token %}
+
+        <label for='restaurant_name'>Restaurant Name </label>
+        <input id='restaurant_name' type="text" name='restaurant_name' value="{{ rest.restaurant_name }}"
+               onblur="checkAvailability(this.value)"
+               required /><br>
+
+        {#        <label for="restaurant_open_hour">Restaurant Open Hour</label>#}
+        {#        <input id = "restaurant_name" type = "text" name = "restaurant_open_hour" value="{{ rest.restaurant_open_hour }}" /><br>#}
+        {##}
+        {#        <label for="restaurant_close_hour">Restaurant Close Hour </label>#}
+        {#        <input id = "restaurant_close_hour" type = "text" name = "restaurant_close_hour" value = "{{ rest.restaurant_close_hour  }}"/><br>#}
+
+        <label for="restaurant_address">Restaurant Address</label>
+        <input id="restaurant_address" type="text" name="restaurant_address" value="{{ rest.restaurant_address }}"
+               required/><br>
+
+        <label for="restaurant_phone">Restaurant Phone</label>
+        <input id="restaurant_phone" type="text" name="restaurant_phone" value="{{ rest.restaurant_phone }}"
+               required/><br>
+
+        <label for="restaurant_email">Restaurant Email</label>
+        <input id="restaurant_email" type="text" name="restaurant_email" value="{{ rest.restaurant_email }}"/><br>
+
+        <label for="restaurant_category">Restaurant Category ID</label>
+        <input id="restaurant_category" type="text" name="restaurant_category"
+               value="{{ rest.restaurant_category }}"/><br>
+
+        <label for="restaurant_description">Restaurant Description</label>
+        <input id="restaurant_description" type="text" name="restaurant_description"
+               value="{{ rest.restaurant_description }}"/><br>
+
+        <br><br>
+
+        <input type="submit" value="Submit" onclick="addRestaurantRecord()">
+
+    </form>
+
+</div>
+
+<script>
+
+</script>
+<div id="existing_restaurants">
+
+
+</div>
+
+{% if submissionStatus == True %}
+    <script>
+        alert('success');
+    </script>
+
+{% endif %}
+
+
+
+{#<form action="/deliveryadmin/" method="post">#}
+{#    {% csrf_token %}#}
+{#    {{ form.as_ul }}#}
+{#    <input type="submit" value="Submit" />#}
+{#</form>#}
+
+</body>
+</html>
